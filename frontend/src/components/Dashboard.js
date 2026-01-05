@@ -32,40 +32,72 @@ const Dashboard = ({ token, onLogout, onShowLogin }) => {
   };
 
   return (
-    <div>
-      <h1>CoinConvert Exchange</h1>
-      <div>
-        {token ? (
-          <>
-            <button onClick={onLogout}>Logout</button>
-            <button onClick={() => setView('list')}>My Transactions</button>
-          </>
-        ) : (
-          <button onClick={onShowLogin}>Login / Register</button>
+    <div className="app-container">
+      <div className="app-header">
+        <h1>🪙 CoinConvert</h1>
+        <p>Обмен USDT и российских рублей</p>
+      </div>
+
+      <div className="button-group">
+        <button
+          className={`primary ${view === 'sell' ? '' : 'secondary'}`}
+          onClick={() => setView('sell')}
+        >
+          🏦 Продать USDT
+        </button>
+        <button
+          className={`primary ${view === 'buy' ? '' : 'secondary'}`}
+          onClick={() => setView('buy')}
+        >
+          💰 Купить USDT
+        </button>
+        {token && (
+          <button className="secondary" onClick={() => setView('list')}>
+            📋 Мои транзакции
+          </button>
+        )}
+        {!token && (
+          <button className="tertiary" onClick={onShowLogin}>
+            🔐 Вход / Регистрация
+          </button>
+        )}
+        {token && (
+          <button className="danger" onClick={onLogout}>
+            🚪 Выход
+          </button>
         )}
       </div>
-      <div>
-        <button onClick={() => setView('sell')}>Sell USDT</button>
-        <button onClick={() => setView('buy')}>Buy USDT</button>
-      </div>
+
       {view === 'sell' && <SellForm token={token} onSubmit={handleTransaction} />}
       {view === 'buy' && <BuyForm token={token} onSubmit={handleTransaction} />}
+
       {view === 'list' && token && (
-        <div>
-          <h2>My Transactions</h2>
-          <ul>
-            {transactions.map(tx => (
-              <li key={tx.id}>
-                <strong>Hash:</strong> {tx.hash}<br/>
-                {tx.type} - {tx.amount_usdt ? `${tx.amount_usdt} USDT` : `${tx.amount_rub} RUB`} - {tx.status}
-              </li>
-            ))}
-          </ul>
+        <div className="transaction-list">
+          <h2>📊 Ваши транзакции</h2>
+          {transactions.length > 0 ? (
+            transactions.map(tx => (
+              <div key={tx.id} className="transaction-item">
+                <strong>
+                  {tx.type === 'sell' ? '🏦 Продано' : '💰 Куплено'} {tx.amount_usdt || tx.amount_rub}
+                </strong>
+                {tx.type === 'sell' ? ` USDT → ${tx.amount_rub} RUB` : ` RUB → ${tx.amount_usdt} USDT`}
+                <br />
+                <small>
+                  Статус: <strong>{tx.status === 'pending' ? 'В ожидании' : tx.status === 'confirming' ? 'Подтверждение' : 'Завершено'}</strong> | Хеш: <code>{tx.hash.substring(0, 16)}...</code>
+                </small>
+              </div>
+            ))
+          ) : (
+            <p>Транзакций еще нет</p>
+          )}
         </div>
       )}
+
       {view === 'list' && !token && (
-        <div>
-          <p>Please login to view your transaction history</p>
+        <div className="form-container">
+          <p style={{ textAlign: 'center', fontSize: '1.1em' }}>
+            💡 Пожалуйста, войдите, чтобы увидеть историю ваших транзакций
+          </p>
         </div>
       )}
     </div>

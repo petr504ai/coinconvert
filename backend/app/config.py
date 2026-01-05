@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     master_wallet_address: str = ""
     master_wallet_private_key: str = ""
     
+    # Rate Limiting
+    api_retry_attempts: int = 3
+    api_retry_delay: int = 2  # seconds
+    api_request_delay: float = 0.5  # delay between requests in seconds
+    
     class Config:
         env_file = env_file
         env_file_encoding = 'utf-8'

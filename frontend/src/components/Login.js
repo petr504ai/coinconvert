@@ -4,35 +4,71 @@ import axios from 'axios';
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isRegister, setIsRegister] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const url = isRegister ? 'http://localhost:8000/auth/register' : 'http://localhost:8000/auth/token';
+    const endpoint = isRegistering ? '/auth/register' : '/auth/token';
+    const data = isRegistering
+      ? { email, password }
+      : new URLSearchParams({ username: email, password });
+
     try {
-      const response = await axios.post(url, isRegister ? { email, password } : new URLSearchParams({ username: email, password }));
-      if (isRegister) {
-        alert('Registered successfully');
-        setIsRegister(false);
-      } else {
-        onLogin(response.data.access_token);
-      }
+      const response = await axios.post(
+        `http://localhost:8000${endpoint}`,
+        data,
+        {
+          headers: {
+            'Content-Type': isRegistering ? 'application/json' : 'application/x-www-form-urlencoded'
+          }
+        }
+      );
+      const token = response.data.access_token || response.data.access_token;
+      onLogin(token);
     } catch (error) {
-      alert('Error: ' + error.response.data.detail);
+      alert('❌ ' + (error.response?.data?.detail || 'Ошибка'));
     }
   };
 
   return (
-    <div>
-      <h2>{isRegister ? 'Register' : 'Login'}</h2>
+    <div className="form-container">
+      <h2>{isRegistering ? '📝 Регистрация' : '🔐 Вход'}</h2>
       <form onSubmit={handleSubmit}>
-        <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        <button type="submit">{isRegister ? 'Register' : 'Login'}</button>
+        <div className="form-group">
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            placeholder="your@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="password">Пароль</label>
+          <input
+            id="password"
+            type="password"
+            placeholder="Введите пароль"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <button type="submit" className="form-submit">
+          {isRegistering ? 'Зарегистрироваться' : 'Войти'}
+        </button>
       </form>
-      <button onClick={() => setIsRegister(!isRegister)}>
-        {isRegister ? 'Already have an account? Login' : 'Need an account? Register'}
-      </button>
+      <div style={{ marginTop: '20px', textAlign: 'center' }}>
+        <button
+          className="tertiary"
+          onClick={() => setIsRegistering(!isRegistering)}
+          style={{ width: 'auto' }}
+        >
+          {isRegistering ? 'Уже есть аккаунт? Войти' : 'Нет аккаунта? Зарегистрироваться'}
+        </button>
+      </div>
     </div>
   );
 };

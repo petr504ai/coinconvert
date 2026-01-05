@@ -21,8 +21,12 @@ function App() {
   return (
     <div className="App">
       {showLogin ? (
-        <div>
-          <button onClick={() => setShowLogin(false)}>Back to Exchange</button>
+        <div className="app-container">
+          <div className="button-group">
+            <button className="tertiary" onClick={() => setShowLogin(false)}>
+              ← Back to Exchange
+            </button>
+          </div>
           <Login onLogin={handleLogin} />
         </div>
       ) : (

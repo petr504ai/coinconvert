@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import BankSelect from './BankSelect';
 
 const BuyForm = ({ token, onSubmit }) => {
   const [amount, setAmount] = useState('');
@@ -22,22 +23,69 @@ const BuyForm = ({ token, onSubmit }) => {
         headers: { Authorization: `Bearer ${token}` }
       } : {};
       const response = await axios.post('http://localhost:8000/api/transactions', data, config);
-      alert(`Transaction created!\n\nYour transaction hash: ${response.data.hash}\n\nStatus: ${response.data.status}\n\nWe will process your order and send USDT to: ${address}\n\nSave your hash to track the transaction.`);
+      alert(`✅ Транзакция создана!\n\n📋 Хеш: ${response.data.hash}\n\nСтатус: ${response.data.status}\n\nМы отправим USDT на: ${address}\n\n💾 Сохраните хеш для отслеживания транзакции.`);
+      setAmount('');
+      setPhone('');
+      setBank('');
+      setAddress('');
       onSubmit();
     } catch (error) {
-      alert('Error: ' + (error.response?.data?.detail || error.message));
+      alert('❌ Ошибка: ' + (error.response?.data?.detail || error.message));
     }
   };
 
   return (
-    <div>
-      <h2>Buy USDT with RUB</h2>
+    <div className="form-container">
+      <h2>💰 Купить USDT за RUB</h2>
       <form onSubmit={handleSubmit}>
-        <input type="number" placeholder="RUB Amount" value={amount} onChange={(e) => setAmount(e.target.value)} required />
-        <input type="text" placeholder="Phone Number" value={phone} onChange={(e) => setPhone(e.target.value)} required />
-        <input type="text" placeholder="Bank Name" value={bank} onChange={(e) => setBank(e.target.value)} required />
-        <input type="text" placeholder="Your USDT Address" value={address} onChange={(e) => setAddress(e.target.value)} required />
-        <button type="submit">Submit</button>
+        <div className="form-group">
+          <label htmlFor="amount">Сумма (RUB)</label>
+          <input
+            id="amount"
+            type="number"
+            placeholder="Введите сумму в рублях"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            step="0.01"
+            min="1"
+            required
+          />
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="phone">Номер телефона</label>
+            <input
+              id="phone"
+              type="tel"
+              placeholder="+7XXXXXXXXXX"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+            />
+          </div>
+          <div className="bank-select-wrapper">
+            <BankSelect
+              value={bank}
+              onChange={setBank}
+              label="Название банка"
+            />
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="address">Ваш USDT адрес (TRC-20)</label>
+          <input
+            id="address"
+            type="text"
+            placeholder="Ваш адрес кошелька Tron, начинающийся с T..."
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            required
+          />
+        </div>
+
+        <button type="submit" className="form-submit">Отправить заявку на покупку</button>
       </form>
     </div>
   );

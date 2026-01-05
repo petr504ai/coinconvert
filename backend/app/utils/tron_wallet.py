@@ -3,6 +3,7 @@ from tronpy.keys import PrivateKey
 from decimal import Decimal
 from ..config import settings
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +17,25 @@ class TronWallet:
             # Without API key (free, limited to default rate limits)
             self.client = Tron(network='mainnet')
         
-        # USDT TRC-20 contract
-        self.usdt_contract = self.client.get_contract(settings.usdt_trc20_contract)
+        try:
+            # USDT TRC-20 contract
+            self.usdt_contract = self._get_contract_with_retry(settings.usdt_trc20_contract)
+        except Exception as e:
+            logger.error(f"Failed to initialize USDT contract: {e}")
+            self.usdt_contract = None
+    
+    def _get_contract_with_retry(self, address, max_retries=3):
+        """Get contract with retry logic for rate limiting"""
+        for attempt in range(max_retries):
+            try:
+                return self.client.get_contract(address)
+            except Exception as e:
+                if '429' in str(e) and attempt < max_retries - 1:
+                    wait_time = (2 ** attempt) * 2  # Exponential backoff: 2, 4, 8 seconds
+                    logger.warning(f"Rate limited, retrying in {wait_time}s...")
+                    time.sleep(wait_time)
+                else:
+                    raise
     
     def generate_deposit_address(self):
         """Generate a new Tron address for deposits"""
@@ -30,14 +48,25 @@ class TronWallet:
     
     def get_usdt_balance(self, address: str) -> Decimal:
         """Get USDT balance for an address"""
-        try:
-            balance = self.usdt_contract.functions.balanceOf(address)
-            # USDT has 6 decimals on Tron
-            return Decimal(balance) / Decimal(10**6)
-        except Exception as e:
-            logger.error(f"Error getting balance for {address}: {e}")
+        if not self.usdt_contract:
+            logger.error("USDT contract not initialized")
             return Decimal(0)
+        
+        for attempt in range(3):
+            try:
+                balance = self.usdt_contract.functions.balanceOf(address)
+                # USDT has 6 decimals on Tron
+                return Decimal(balance) / Decimal(10**6)
+            except Exception as e:
+                if '429' in str(e) and attempt < 2:
+                    wait_time = (2 ** attempt) * 2
+                    logger.warning(f"Rate limited on balance check, retrying in {wait_time}s...")
+                    time.sleep(wait_time)
+                else:
+                    logger.error(f"Error getting balance for {address}: {e}")
+                    return Decimal(0)
     
+    @retry_on_rate_limit
     def check_incoming_transaction(self, address: str, expected_amount: Decimal) -> dict:
         """Check if address received expected USDT amount"""
         try:
@@ -63,6 +92,7 @@ class TronWallet:
             logger.error(f"Error getting transactions for {address}: {e}")
             return []
     
+    @retry_on_rate_limit
     def send_usdt(self, to_address: str, amount: Decimal) -> dict:
         """Send USDT from master wallet to an address"""
         try:
