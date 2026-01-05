@@ -1,7 +1,5 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .database import engine
-from .models import Base
 from .routes import auth, transactions
 
 try:
@@ -10,8 +8,6 @@ try:
 except Exception as e:
     print(f"Warning: Could not load exchange_rate module: {e}")
     has_pricing = False
-
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="CoinConvert API")
 

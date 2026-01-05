@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
+import TransactionDetails from './components/TransactionDetails';
 import './App.css';
 
 function App() {
@@ -19,20 +21,27 @@ function App() {
   };
 
   return (
-    <div className="App">
-      {showLogin ? (
-        <div className="app-container">
-          <div className="button-group">
-            <button className="tertiary" onClick={() => setShowLogin(false)}>
-              ← Back to Exchange
-            </button>
-          </div>
-          <Login onLogin={handleLogin} />
-        </div>
-      ) : (
-        <Dashboard token={token} onLogout={handleLogout} onShowLogin={() => setShowLogin(true)} />
-      )}
-    </div>
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/transaction/:hash" element={<TransactionDetails />} />
+          <Route path="/" element={
+            showLogin ? (
+              <div className="app-container">
+                <div className="button-group">
+                  <button className="tertiary" onClick={() => setShowLogin(false)}>
+                    ← Back to Exchange
+                  </button>
+                </div>
+                <Login onLogin={handleLogin} />
+              </div>
+            ) : (
+              <Dashboard token={token} onLogout={handleLogout} onShowLogin={() => setShowLogin(true)} />
+            )
+          } />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

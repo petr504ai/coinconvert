@@ -4,6 +4,7 @@ from decimal import Decimal
 from ..config import settings
 import logging
 import time
+import os
 from functools import wraps
 
 logger = logging.getLogger(__name__)
@@ -34,15 +35,14 @@ class TronWallet:
         logger.info(f"Initializing TronWallet for mainnet")
         
         try:
+            # Set API key as environment variable for tronpy
             if settings.trongrid_api_key:
+                os.environ['TRON_PRO_API_KEY'] = settings.trongrid_api_key
                 logger.info(f"Using TronGrid API with key (starting with: {settings.trongrid_api_key[:10]}...)")
-                # Initialize client with mainnet (uses TronGrid by default)
-                self.client = Tron(network='mainnet')
-                # TronGrid API key is passed via environment or headers in requests
-                # For tronpy, we can pass it through the provider if needed
             else:
                 logger.warning("No TronGrid API key configured. Using free tier (rate limited). Set TRONGRID_API_KEY in .env")
-                self.client = Tron(network='mainnet')
+            
+            self.client = Tron(network='mainnet')
             
             # USDT TRC-20 contract
             logger.info(f"Loading USDT contract: {settings.usdt_trc20_contract}")

@@ -5,7 +5,14 @@ from pathlib import Path
 env_file = Path(__file__).parent.parent / ".env"
 
 class Settings(BaseSettings):
+    # Database (deprecated - using Google Sheets)
     database_url: str = "sqlite:///./coinconvert.db"
+    
+    # Google Sheets Configuration
+    google_sheets_credentials_file: str = ""
+    google_sheets_spreadsheet_id: str = ""
+    
+    # Security
     secret_key: str = "your-secret-key-here"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30

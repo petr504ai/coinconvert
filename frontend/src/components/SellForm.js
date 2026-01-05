@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import BankSelect from './BankSelect';
 
 const SellForm = ({ token, onSubmit }) => {
+  const navigate = useNavigate();
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState('bank');
   const [phone, setPhone] = useState('');
@@ -10,15 +12,19 @@ const SellForm = ({ token, onSubmit }) => {
   const [card, setCard] = useState('');
   const [pricing, setPricing] = useState(null);
   const [estimatedRub, setEstimatedRub] = useState(0);
+  const [loadingPricing, setLoadingPricing] = useState(true);
 
   useEffect(() => {
     // Fetch current pricing
     const fetchPricing = async () => {
+      setLoadingPricing(true);
       try {
         const response = await axios.get('http://localhost:8000/pricing');
         setPricing(response.data);
       } catch (error) {
         console.error('Error fetching pricing:', error);
+      } finally {
+        setLoadingPricing(false);
       }
     };
     
@@ -53,8 +59,10 @@ const SellForm = ({ token, onSubmit }) => {
         headers: { Authorization: `Bearer ${token}` }
       } : {};
       const response = await axios.post('http://localhost:8000/api/transactions', data, config);
-      const depositAddr = response.data.deposit_address;
-      alert(`✅ Транзакция создана!\n\n📋 Хеш: ${response.data.hash}\n\n💵 Отправьте ${amount} USDT (TRC-20) на:\n${depositAddr}\n\n💾 Сохраните эту информацию для отслеживания транзакции.`);
+      
+      // Redirect to transaction details page
+      navigate(`/transaction/${response.data.hash}`);
+      
       setAmount('');
       setPhone('');
       setBank('');
@@ -70,11 +78,15 @@ const SellForm = ({ token, onSubmit }) => {
     <div className="form-container">
       <h2>
         🏦 Продать USDT за RUB
-        {pricing && (
+        {loadingPricing ? (
+          <span style={{ display: 'block', fontSize: '0.65em', fontWeight: '400', color: '#f59e0b', marginTop: '8px' }}>
+            ⏳ Ждем обновления цены (10-20 секунд)...
+          </span>
+        ) : pricing ? (
           <span style={{ display: 'block', fontSize: '0.7em', fontWeight: '400', color: '#059669', marginTop: '8px' }}>
             {pricing.sell_price.toFixed(2)} ₽ за 1 USDT
           </span>
-        )}
+        ) : null}
       </h2>
       {pricing && (
         <div style={{ backgroundColor: '#f0f9ff', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9em' }}>
