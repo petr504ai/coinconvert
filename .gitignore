@@ -50,6 +50,13 @@ pip-delete-this-directory.txt
 # Logs
 *.log
 
+# Sensitive scripts and private key exports (NEVER commit)
+export_private_keys.py
+backend/export_private_keys.py
+private_keys_export_*.txt
+*private_keys*.txt
+*_backup*.txt
+
 # Node
 node_modules/
 npm-debug.log
@@ -57,3 +64,7 @@ yarn-error.log
 
 # Build outputs
 frontend/build/
+frontend/public/logo_big.png
+.gitignore
+frontend/src/App-old.css
+frontend/src/App-new.css

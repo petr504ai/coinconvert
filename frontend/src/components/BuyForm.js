@@ -6,32 +6,13 @@ import BankSelect from './BankSelect';
 const BuyForm = ({ token, onSubmit }) => {
   const navigate = useNavigate();
   const [amount, setAmount] = useState('');
+  const [inputCurrency, setInputCurrency] = useState('usdt'); // 'usdt' or 'rub'
   const [phone, setPhone] = useState('');
   const [bank, setBank] = useState('');
   const [address, setAddress] = useState('');
   const [pricing, setPricing] = useState(null);
-  const [estimatedUsdt, setEstimatedUsdt] = useState(0);
+  const [calculatedAmount, setCalculatedAmount] = useState(0);
   const [loadingPricing, setLoadingPricing] = useState(true);
-  const [addressError, setAddressError] = useState('');
-
-  const validateTronAddress = (addr) => {
-    // Basic Tron address validation
-    if (!addr) return '';
-    if (addr.length !== 34) return 'Адрес должен содержать 34 символа';
-    if (!addr.startsWith('T')) return 'Адрес Tron должен начинаться с T';
-    if (!/^[A-HJ-NP-Za-km-z1-9]+$/.test(addr)) return 'Недопустимые символы в адресе';
-    return '';
-  };
-
-  const handleAddressChange = (e) => {
-    const value = e.target.value.trim();
-    setAddress(value);
-    if (value) {
-      setAddressError(validateTronAddress(value));
-    } else {
-      setAddressError('');
-    }
-  };
 
   useEffect(() => {
     // Fetch current pricing
@@ -54,20 +35,39 @@ const BuyForm = ({ token, onSubmit }) => {
   }, []);
 
   useEffect(() => {
-    // Calculate estimated USDT amount
+    // Calculate the other currency amount
     if (amount && pricing) {
-      const usdt = parseFloat(amount) / pricing.buy_price;
-      setEstimatedUsdt(usdt.toFixed(6));
+      if (inputCurrency === 'usdt') {
+        // User entered USDT, calculate RUB
+        const rub = parseFloat(amount) * pricing.buy_price;
+        setCalculatedAmount(rub.toFixed(2));
+      } else {
+        // User entered RUB, calculate USDT
+        const usdt = parseFloat(amount) / pricing.buy_price;
+        setCalculatedAmount(usdt.toFixed(6));
+      }
     } else {
-      setEstimatedUsdt(0);
+      setCalculatedAmount(0);
     }
-  }, [amount, pricing]);
+  }, [amount, pricing, inputCurrency]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Calculate both amounts
+    let amount_usdt, amount_rub;
+    if (inputCurrency === 'usdt') {
+      amount_usdt = parseFloat(amount);
+      amount_rub = parseFloat(calculatedAmount);
+    } else {
+      amount_rub = parseFloat(amount);
+      amount_usdt = parseFloat(calculatedAmount);
+    }
+    
     const data = {
       type: 'buy',
-      amount_rub: parseFloat(amount),
+      amount_usdt: amount_usdt,
+      amount_rub: amount_rub,
       payment_method: 'bank',
       phone_number: phone,
       bank_name: bank,
@@ -118,21 +118,72 @@ const BuyForm = ({ token, onSubmit }) => {
       </h2>
 
       <form onSubmit={handleSubmit}>
+        {/* Currency selector toggle */}
+        <div style={{ marginBottom: '20px' }}>
+          <div style={{
+            display: 'flex',
+            gap: '8px',
+            background: 'rgba(255, 255, 255, 0.05)',
+            padding: '4px',
+            borderRadius: '12px',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <button
+              type="button"
+              onClick={() => setInputCurrency('usdt')}
+              style={{
+                flex: 1,
+                padding: '12px',
+                borderRadius: '10px',
+                background: inputCurrency === 'usdt' ? 'rgba(96, 165, 250, 0.3)' : 'transparent',
+                color: inputCurrency === 'usdt' ? '#60a5fa' : 'rgba(255, 255, 255, 0.6)',
+                fontWeight: inputCurrency === 'usdt' ? '600' : '400',
+                fontSize: '0.95rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                border: inputCurrency === 'usdt' ? '1px solid rgba(96, 165, 250, 0.5)' : '1px solid transparent'
+              }}
+            >
+              💵 USDT
+            </button>
+            <button
+              type="button"
+              onClick={() => setInputCurrency('rub')}
+              style={{
+                flex: 1,
+                padding: '12px',
+                borderRadius: '10px',
+                background: inputCurrency === 'rub' ? 'rgba(96, 165, 250, 0.3)' : 'transparent',
+                color: inputCurrency === 'rub' ? '#60a5fa' : 'rgba(255, 255, 255, 0.6)',
+                fontWeight: inputCurrency === 'rub' ? '600' : '400',
+                fontSize: '0.95rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                border: inputCurrency === 'rub' ? '1px solid rgba(96, 165, 250, 0.5)' : '1px solid transparent'
+              }}
+            >
+              💰 RUB
+            </button>
+          </div>
+        </div>
+
         <div className="form-group">
-          <label htmlFor="amount">Сумма (RUB)</label>
+          <label htmlFor="amount">
+            {inputCurrency === 'usdt' ? 'Сумма USDT' : 'Сумма RUB'}
+          </label>
           <input
             id="amount"
             type="number"
-            placeholder="Введите сумму в рублях"
+            placeholder={inputCurrency === 'usdt' ? 'Введите сумму в USDT' : 'Введите сумму в рублях'}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            step="0.01"
-            min="1"
+            step={inputCurrency === 'usdt' ? '0.000001' : '0.01'}
+            min="0.000001"
             required
           />
-          {estimatedUsdt > 0 && (
+          {calculatedAmount > 0 && (
             <small style={{ color: '#60a5fa', fontWeight: '700', fontSize: '1em', marginTop: '8px', display: 'block' }}>
-              ≈ {estimatedUsdt} USDT
+              ≈ {calculatedAmount} {inputCurrency === 'usdt' ? 'RUB' : 'USDT'}
             </small>
           )}
         </div>

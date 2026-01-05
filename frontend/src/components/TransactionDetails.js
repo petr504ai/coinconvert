@@ -132,9 +132,22 @@ const TransactionDetails = () => {
                 marginBottom: '16px',
                 border: '1px solid rgba(255, 255, 255, 0.1)'
               }}>
-                <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '8px' }}>Сумма</div>
+                <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '8px' }}>Сумма USDT</div>
                 <div style={{ fontSize: '1.3rem', fontWeight: '600', color: 'white' }}>
                   {transaction.amount_usdt} USDT
+                </div>
+              </div>
+
+              <div style={{ 
+                background: 'rgba(255, 255, 255, 0.08)', 
+                padding: '20px', 
+                borderRadius: '12px', 
+                marginBottom: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.1)'
+              }}>
+                <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '8px' }}>Сумма RUB</div>
+                <div style={{ fontSize: '1.3rem', fontWeight: '600', color: 'white' }}>
+                  {transaction.amount_rub} ₽
                 </div>
               </div>
 
@@ -160,7 +173,7 @@ const TransactionDetails = () => {
                     📋 Копировать адрес
                   </button>
                   <div style={{ fontSize: '0.95rem', color: '#fbbf24', marginTop: '12px' }}>
-                    ⚠️ Отправляйте только USDT (TRC-20) на этот адрес!
+                    ⚠️ Отправляйте только USDT (TRC-20) на этот адрес! Статус транзакции обновляется автоматически после получения 20 подтверждений.  
                   </div>
                 </div>
               )}
@@ -176,9 +189,22 @@ const TransactionDetails = () => {
                 marginBottom: '16px',
                 border: '1px solid rgba(255, 255, 255, 0.1)'
               }}>
-                <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '8px' }}>Сумма</div>
+                <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '8px' }}>Сумма RUB</div>
                 <div style={{ fontSize: '1.3rem', fontWeight: '600', color: 'white' }}>
                   {transaction.amount_rub} ₽
+                </div>
+              </div>
+
+              <div style={{ 
+                background: 'rgba(255, 255, 255, 0.08)', 
+                padding: '20px', 
+                borderRadius: '12px', 
+                marginBottom: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.1)'
+              }}>
+                <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '8px' }}>Сумма USDT</div>
+                <div style={{ fontSize: '1.3rem', fontWeight: '600', color: 'white' }}>
+                  {transaction.amount_usdt} USDT
                 </div>
               </div>
 
@@ -210,7 +236,7 @@ const TransactionDetails = () => {
           }}>
             <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '8px' }}>Способ оплаты</div>
             <div style={{ fontSize: '1.05rem', color: 'white' }}>
-              {transaction.payment_method === 'bank' ? '🏦 Банковский счет' : '💳 Карта'}
+              {transaction.payment_method === 'bank' ? '🏦 Банковский счет (СБП)' : '💳 Карта'}
             </div>
             {transaction.bank_name && (
               <div style={{ fontSize: '0.95rem', marginTop: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>

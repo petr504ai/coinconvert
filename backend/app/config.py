@@ -39,6 +39,11 @@ class Settings(BaseSettings):
     api_retry_delay: int = 2  # seconds
     api_request_delay: float = 0.5  # delay between requests in seconds
     
+    # Telegram Notifications
+    telegram_bot_token: str = ""
+    telegram_chat_id: str = ""
+    telegram_admin_chat_id: str = ""  # Admin user who can use bot commands
+    
     class Config:
         env_file = env_file
         env_file_encoding = 'utf-8'

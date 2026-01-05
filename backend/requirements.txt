@@ -12,3 +12,4 @@ tronpy==0.4.0
 gspread==5.12.0
 google-auth==2.25.2
 requests==2.31.0
+python-telegram-bot==21.0.1

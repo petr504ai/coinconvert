@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional
+from decimal import Decimal
+import re
 from ..utils.tron_wallet import tron_wallet
+from ..utils.telegram_notification import telegram_notifier
+from ..utils.exchange_rate import calculate_sell_price, calculate_buy_price
 from ..sheets_db import sheets_db
 import uuid
 import logging
@@ -46,9 +50,36 @@ def create_transaction(transaction: TransactionCreate):
     logger.info(f"USDT address: {transaction.usdt_address}")
     logger.info("=" * 80)
     
+    # Validate phone number format if provided
+    if transaction.phone_number:
+        phone_pattern = r'^\+7\d{10}$'
+        if not re.match(phone_pattern, transaction.phone_number):
+            logger.warning(f"Invalid phone number format: {transaction.phone_number}")
+            raise HTTPException(
+                status_code=400, 
+                detail="Неверный формат номера телефона. Номер должен начинаться с +7 и содержать 10 цифр (например, +79123456789)"
+            )
+    
     # Generate transaction hash
     transaction_hash = uuid.uuid4().hex
     logger.info(f"Generated transaction hash: {transaction_hash}")
+    
+    # Calculate RUB amount based on current exchange rate if not provided
+    amount_usdt = transaction.amount_usdt
+    amount_rub = transaction.amount_rub
+    
+    if transaction.type == "sell":
+        # For sell transactions, calculate RUB amount from USDT
+        if amount_usdt and not amount_rub:
+            sell_price = calculate_sell_price()  # Price we pay per USDT
+            amount_rub = float(Decimal(str(amount_usdt)) * sell_price)
+            logger.info(f"Calculated RUB amount for sell: {amount_usdt} USDT = {amount_rub} RUB (rate: {sell_price})")
+    elif transaction.type == "buy":
+        # For buy transactions, calculate USDT amount from RUB
+        if amount_rub and not amount_usdt:
+            buy_price = calculate_buy_price()  # Price user pays per USDT
+            amount_usdt = float(Decimal(str(amount_rub)) / buy_price)
+            logger.info(f"Calculated USDT amount for buy: {amount_rub} RUB = {amount_usdt} USDT (rate: {buy_price})")
     
     # Generate deposit address for sell transactions
     deposit_info = None
@@ -67,8 +98,8 @@ def create_transaction(transaction: TransactionCreate):
             'hash': transaction_hash,
             'user_id': None,
             'type': transaction.type,
-            'amount_usdt': transaction.amount_usdt,
-            'amount_rub': transaction.amount_rub,
+            'amount_usdt': amount_usdt,
+            'amount_rub': amount_rub,
             'payment_method': transaction.payment_method,
             'phone_number': transaction.phone_number,
             'bank_name': transaction.bank_name,
@@ -83,6 +114,10 @@ def create_transaction(transaction: TransactionCreate):
         logger.info("Saving transaction to Google Sheets...")
         result = sheets_db.create_transaction(transaction_data)
         logger.info(f"Transaction saved successfully with ID: {result['id']}")
+        
+        # Send Telegram notification
+        logger.info("Sending Telegram notification...")
+        telegram_notifier.send_transaction_notification(result)
         
         return TransactionResponse(
             id=result['id'],
@@ -135,16 +170,58 @@ def check_transaction_status(transaction_hash: str):
         
         if tx.get('type') == 'sell' and tx.get('deposit_address'):
             from decimal import Decimal
+            
+            # Check if already completed
+            if tx.get('status') == 'completed':
+                return {'status': 'completed', 'message': 'Transaction already completed'}
+            
+            # Check balance and confirmations
+            current_status = tx.get('status', 'pending')
+            check_confirmations = (current_status == 'confirming')
+            
             result = tron_wallet.check_incoming_transaction(
                 tx['deposit_address'],
-                Decimal(str(tx['amount_usdt']))
+                Decimal(str(tx['amount_usdt'])),
+                check_confirmations=check_confirmations
             )
             
             if result.get('received'):
-                sheets_db.update_transaction(tx['id'], {'status': 'confirming'})
-                return {'status': 'confirming', 'message': 'Payment received, processing...'}
+                if current_status == 'pending':
+                    # Funds received, move to confirming
+                    sheets_db.update_transaction(tx['id'], {'status': 'confirming'})
+                    logger.info(f"Transaction {transaction_hash} moved to confirming status")
+                    return {
+                        'status': 'confirming', 
+                        'message': 'Payment received, waiting for confirmations...',
+                        'balance': str(result.get('amount', 0)),
+                        'confirmations': result.get('min_confirmations', 0)
+                    }
+                elif current_status == 'confirming' and result.get('confirmed'):
+                    # Funds received AND confirmed (20+ confirmations)
+                    sheets_db.update_transaction(tx['id'], {'status': 'completed'})
+                    logger.info(f"Transaction {transaction_hash} completed with {result.get('min_confirmations', 0)} confirmations")
+                    return {
+                        'status': 'completed', 
+                        'message': 'Transaction confirmed and completed!',
+                        'balance': str(result.get('amount', 0)),
+                        'confirmations': result.get('min_confirmations', 0)
+                    }
+                elif current_status == 'confirming':
+                    # Funds received but not enough confirmations yet
+                    min_confs = result.get('min_confirmations', 0)
+                    return {
+                        'status': 'confirming',
+                        'message': f'Waiting for confirmations ({min_confs}/20)...',
+                        'balance': str(result.get('amount', 0)),
+                        'confirmations': min_confs
+                    }
             else:
-                return {'status': 'pending', 'message': 'Waiting for payment', 'balance': str(result.get('amount', 0))}
+                # Not received yet
+                return {
+                    'status': 'pending', 
+                    'message': 'Waiting for payment', 
+                    'balance': str(result.get('amount', 0))
+                }
         
         return {'status': tx.get('status', 'pending')}
     except HTTPException:

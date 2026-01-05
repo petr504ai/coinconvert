@@ -6,6 +6,7 @@ from ..config import settings
 import logging
 import time
 import os
+import requests
 from functools import wraps
 
 logger = logging.getLogger(__name__)
@@ -139,20 +140,107 @@ class TronWallet:
             return Decimal(0)
     
     @retry_on_rate_limit
-    def check_incoming_transaction(self, address: str, expected_amount: Decimal) -> dict:
-        """Check if address received expected USDT amount"""
+    def get_trc20_transactions(self, address: str, limit: int = 50) -> list:
+        """Get TRC-20 USDT transactions for an address"""
+        try:
+            import requests
+            url = f"https://api.trongrid.io/v1/accounts/{address}/transactions/trc20"
+            params = {
+                'limit': limit,
+                'contract_address': settings.usdt_trc20_contract
+            }
+            headers = {}
+            if settings.trongrid_api_key:
+                headers['TRON-PRO-API-KEY'] = settings.trongrid_api_key
+            
+            response = requests.get(url, params=params, headers=headers, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            
+            return data.get('data', [])
+        except Exception as e:
+            logger.error(f"Error getting TRC-20 transactions for {address}: {e}")
+            return []
+    
+    @retry_on_rate_limit
+    def get_transaction_confirmations(self, tx_id: str) -> int:
+        """Get number of confirmations for a transaction"""
+        try:
+            import requests
+            url = f"https://api.trongrid.io/wallet/gettransactioninfobyid"
+            params = {'value': tx_id}
+            headers = {}
+            if settings.trongrid_api_key:
+                headers['TRON-PRO-API-KEY'] = settings.trongrid_api_key
+            
+            response = requests.post(url, json=params, headers=headers, timeout=10)
+            response.raise_for_status()
+            tx_info = response.json()
+            
+            if 'blockNumber' in tx_info:
+                # Get current block number
+                current_block_url = "https://api.trongrid.io/wallet/getnowblock"
+                block_response = requests.post(current_block_url, headers=headers, timeout=10)
+                block_response.raise_for_status()
+                current_block = block_response.json().get('block_header', {}).get('raw_data', {}).get('number', 0)
+                
+                tx_block = tx_info['blockNumber']
+                confirmations = current_block - tx_block
+                return max(0, confirmations)
+            
+            return 0
+        except Exception as e:
+            logger.error(f"Error getting confirmations for tx {tx_id}: {e}")
+            return 0
+    
+    @retry_on_rate_limit
+    def check_incoming_transaction(self, address: str, expected_amount: Decimal, check_confirmations: bool = False) -> dict:
+        """Check if address received expected USDT amount and optionally verify confirmations"""
         try:
             balance = self.get_usdt_balance(address)
+            
+            result = {
+                'received': False,
+                'amount': balance,
+                'address': address,
+                'confirmed': False,
+                'min_confirmations': 0
+            }
+            
             if balance >= expected_amount:
-                return {
-                    'received': True,
-                    'amount': balance,
-                    'address': address
-                }
-            return {'received': False, 'amount': balance}
+                result['received'] = True
+                
+                # If we need to check confirmations
+                if check_confirmations:
+                    transactions = self.get_trc20_transactions(address)
+                    
+                    # Filter incoming transactions only (to this address)
+                    incoming_txs = [tx for tx in transactions if tx.get('to') == address]
+                    
+                    if incoming_txs:
+                        # Get confirmations for each transaction
+                        min_confirmations = float('inf')
+                        
+                        for tx in incoming_txs:
+                            tx_id = tx.get('transaction_id')
+                            if tx_id:
+                                confirmations = self.get_transaction_confirmations(tx_id)
+                                logger.info(f"Transaction {tx_id[:16]}... has {confirmations} confirmations")
+                                min_confirmations = min(min_confirmations, confirmations)
+                        
+                        result['min_confirmations'] = min_confirmations if min_confirmations != float('inf') else 0
+                        result['confirmed'] = min_confirmations >= 20
+                        
+                        logger.info(f"Address {address}: Balance={balance}, Min confirmations={result['min_confirmations']}, Confirmed={result['confirmed']}")
+                    else:
+                        logger.warning(f"No incoming transactions found for {address}")
+                        result['min_confirmations'] = 0
+                        result['confirmed'] = False
+            
+            return result
         except Exception as e:
             logger.error(f"Error checking transaction for {address}: {e}")
-            return {'received': False, 'error': str(e)}
+            return {'received': False, 'error': str(e), 'confirmed': False}
     
     @retry_on_rate_limit
     def get_transaction_history(self, address: str, limit: int = 20):
