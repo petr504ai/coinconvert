@@ -13,7 +13,6 @@ const SellForm = ({ token, onSubmit }) => {
   const [pricing, setPricing] = useState(null);
   const [estimatedRub, setEstimatedRub] = useState(0);
   const [loadingPricing, setLoadingPricing] = useState(true);
-  const [trackingHash, setTrackingHash] = useState('');
 
   useEffect(() => {
     // Fetch current pricing
@@ -84,36 +83,21 @@ const SellForm = ({ token, onSubmit }) => {
             ⏳ Ждем обновления цены (10-20 секунд)...
           </span>
         ) : pricing ? (
-          <span style={{ display: 'block', fontSize: '0.7em', fontWeight: '400', color: '#059669', marginTop: '8px' }}>
-            {pricing.sell_price.toFixed(2)} ₽ за 1 USDT
+          <span style={{ 
+            display: 'block', 
+            fontSize: '0.9em', 
+            fontWeight: '600', 
+            color: '#10b981', 
+            marginTop: '12px',
+            padding: '8px 16px',
+            background: 'rgba(16, 185, 129, 0.15)',
+            borderRadius: '8px',
+            border: '1px solid rgba(16, 185, 129, 0.3)'
+          }}>
+            💵 {pricing.sell_price.toFixed(2)} ₽ за 1 USDT
           </span>
         ) : null}
       </h2>
-
-      {/* Transaction Tracking */}
-      <div style={{ backgroundColor: '#eff6ff', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
-        <div style={{ fontSize: '0.9em', fontWeight: '600', marginBottom: '8px', color: '#1e40af' }}>
-          🔍 Отследить транзакцию
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <input
-            type="text"
-            placeholder="Введите хеш транзакции"
-            value={trackingHash}
-            onChange={(e) => setTrackingHash(e.target.value)}
-            style={{ flex: 1, padding: '10px', fontSize: '0.9em' }}
-          />
-          <button
-            type="button"
-            onClick={() => trackingHash && navigate(`/transaction/${trackingHash}`)}
-            disabled={!trackingHash}
-            className="secondary"
-            style={{ padding: '10px 20px', whiteSpace: 'nowrap' }}
-          >
-            Перейти
-          </button>
-        </div>
-      </div>
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -129,7 +113,7 @@ const SellForm = ({ token, onSubmit }) => {
             required
           />
           {estimatedRub > 0 && (
-            <small style={{ color: '#059669', fontWeight: '600', marginTop: '8px', display: 'block' }}>
+            <small style={{ color: '#10b981', fontWeight: '700', fontSize: '1em', marginTop: '8px', display: 'block' }}>
               ≈ {estimatedRub} ₽
             </small>
           )}
@@ -184,7 +168,7 @@ const SellForm = ({ token, onSubmit }) => {
           </div>
         )}
 
-        <button type="submit" className="form-submit">Отправить заявку на продажу</button>
+        <button type="submit" className="form-submit" style={{ marginTop: '24px' }}>Отправить заявку на продажу</button>
       </form>
     </div>
   );

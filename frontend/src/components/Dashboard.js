@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import SellForm from './SellForm';
 import BuyForm from './BuyForm';
@@ -6,6 +7,8 @@ import BuyForm from './BuyForm';
 const Dashboard = ({ token, onLogout, onShowLogin }) => {
   const [transactions, setTransactions] = useState([]);
   const [view, setView] = useState('sell');
+  const [trackingHash, setTrackingHash] = useState('');
+  const navigate = useNavigate();
 
   const fetchTransactions = useCallback(async () => {
     try {
@@ -34,40 +37,53 @@ const Dashboard = ({ token, onLogout, onShowLogin }) => {
   return (
     <div className="app-container">
       <div className="app-header">
-        <h1>🪙 CoinConvert</h1>
-        <p>Обмен USDT и российских рублей</p>
+        <img src="/logo.png" alt="CoinConvert" style={{ maxWidth: '480px', height: 'auto', marginBottom: '8px' }} />
+        <p className="subtitle">Обмен USDT на рубли</p>
       </div>
 
-      <div className="button-group">
+      {/* Transaction Tracking */}
+      <div className="tracking-section">
+        <div className="tracking-label">
+          <span className="icon">🔍</span>
+          Отследить транзакцию
+        </div>
+        <div className="tracking-input-group">
+          <input
+            type="text"
+            className="tracking-input"
+            placeholder="Введите хеш транзакции"
+            value={trackingHash}
+            onChange={(e) => setTrackingHash(e.target.value)}
+          />
+          <button
+            className="tracking-button"
+            onClick={() => trackingHash && navigate(`/transaction/${trackingHash}`)}
+            disabled={!trackingHash}
+          >
+            Перейти →
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="tabs">
         <button
-          className={`primary ${view === 'sell' ? '' : 'secondary'}`}
+          className={`tab ${view === 'sell' ? 'active' : ''}`}
           onClick={() => setView('sell')}
         >
-          🏦 Продать USDT
+          <span className="tab-icon">💸</span>
+          Продать USDT
         </button>
         <button
-          className={`primary ${view === 'buy' ? '' : 'secondary'}`}
+          className={`tab ${view === 'buy' ? 'active' : ''}`}
           onClick={() => setView('buy')}
         >
-          💰 Купить USDT
+          <span className="tab-icon">💰</span>
+          Купить USDT
         </button>
-        {token && (
-          <button className="secondary" onClick={() => setView('list')}>
-            📋 Мои транзакции
-          </button>
-        )}
-        {!token && (
-          <button className="tertiary" onClick={onShowLogin}>
-            🔐 Вход / Регистрация
-          </button>
-        )}
-        {token && (
-          <button className="danger" onClick={onLogout}>
-            🚪 Выход
-          </button>
-        )}
       </div>
 
+      {/* Forms */}
       {view === 'sell' && <SellForm token={token} onSubmit={handleTransaction} />}
       {view === 'buy' && <BuyForm token={token} onSubmit={handleTransaction} />}
 

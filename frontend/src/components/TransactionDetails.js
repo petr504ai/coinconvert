@@ -76,7 +76,7 @@ const TransactionDetails = () => {
   return (
     <div className="app-container">
       <div className="app-header">
-        <h1>🪙 CoinConvert</h1>
+        <img src="/logo.png" alt="CoinConvert" style={{ maxWidth: '480px', height: 'auto', marginBottom: '8px' }} />
         <p>Детали транзакции</p>
       </div>
 
@@ -90,22 +90,34 @@ const TransactionDetails = () => {
         </h2>
 
         <div style={{ marginTop: '20px' }}>
-          <div style={{ backgroundColor: '#f3f4f6', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-            <div style={{ fontSize: '0.9em', color: '#6b7280', marginBottom: '4px' }}>Статус</div>
-            <div style={{ fontSize: '1.2em', fontWeight: '600' }}>
+          <div style={{ 
+            background: 'rgba(255, 255, 255, 0.08)', 
+            padding: '20px', 
+            borderRadius: '12px', 
+            marginBottom: '16px',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '8px' }}>Статус</div>
+            <div style={{ fontSize: '1.3rem', fontWeight: '600', color: 'white' }}>
               {getStatusIcon(transaction.status)} {getStatusText(transaction.status)}
             </div>
           </div>
 
-          <div style={{ backgroundColor: '#f3f4f6', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-            <div style={{ fontSize: '0.9em', color: '#6b7280', marginBottom: '4px' }}>Хеш транзакции на CoinConvert</div>
-            <div style={{ fontSize: '0.9em', wordBreak: 'break-all', marginBottom: '8px' }}>
+          <div style={{ 
+            background: 'rgba(255, 255, 255, 0.08)', 
+            padding: '20px', 
+            borderRadius: '12px', 
+            marginBottom: '16px',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '8px' }}>Хеш транзакции на CoinConvert</div>
+            <div style={{ fontSize: '0.95rem', wordBreak: 'break-all', marginBottom: '12px', color: 'white' }}>
               {transaction.hash}
             </div>
             <button 
-              className="tertiary" 
+              className="secondary" 
               onClick={() => copyToClipboard(transaction.hash)}
-              style={{ width: 'auto', padding: '6px 12px', fontSize: '0.85em' }}
+              style={{ width: 'auto', padding: '10px 20px', fontSize: '0.95rem' }}
             >
               📋 Копировать
             </button>
@@ -113,29 +125,41 @@ const TransactionDetails = () => {
 
           {transaction.type === 'sell' && (
             <>
-              <div style={{ backgroundColor: '#f3f4f6', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-                <div style={{ fontSize: '0.9em', color: '#6b7280', marginBottom: '4px' }}>Сумма</div>
-                <div style={{ fontSize: '1.1em', fontWeight: '600' }}>
+              <div style={{ 
+                background: 'rgba(255, 255, 255, 0.08)', 
+                padding: '20px', 
+                borderRadius: '12px', 
+                marginBottom: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.1)'
+              }}>
+                <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '8px' }}>Сумма</div>
+                <div style={{ fontSize: '1.3rem', fontWeight: '600', color: 'white' }}>
                   {transaction.amount_usdt} USDT
                 </div>
               </div>
 
               {transaction.deposit_address && (
-                <div style={{ backgroundColor: '#fef3c7', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-                  <div style={{ fontSize: '0.9em', color: '#92400e', marginBottom: '4px', fontWeight: '600' }}>
+                <div style={{ 
+                  background: 'rgba(251, 191, 36, 0.15)', 
+                  padding: '20px', 
+                  borderRadius: '12px', 
+                  marginBottom: '16px',
+                  border: '1px solid rgba(251, 191, 36, 0.3)'
+                }}>
+                  <div style={{ fontSize: '1rem', color: '#fbbf24', marginBottom: '12px', fontWeight: '600' }}>
                     💳 Адрес для отправки USDT (TRC-20)
                   </div>
-                  <div style={{ fontSize: '0.85em', wordBreak: 'break-all', marginBottom: '8px', fontFamily: 'monospace' }}>
+                  <div style={{ fontSize: '0.95rem', wordBreak: 'break-all', marginBottom: '12px', fontFamily: 'monospace', color: 'white' }}>
                     {transaction.deposit_address}
                   </div>
                   <button 
                     className="primary" 
                     onClick={() => copyToClipboard(transaction.deposit_address)}
-                    style={{ width: 'auto', padding: '8px 16px', fontSize: '0.85em' }}
+                    style={{ width: 'auto', padding: '12px 24px', fontSize: '0.95rem', marginBottom: '12px' }}
                   >
                     📋 Копировать адрес
                   </button>
-                  <div style={{ fontSize: '0.8em', color: '#92400e', marginTop: '12px' }}>
+                  <div style={{ fontSize: '0.95rem', color: '#fbbf24', marginTop: '12px' }}>
                     ⚠️ Отправляйте только USDT (TRC-20) на этот адрес!
                   </div>
                 </div>
@@ -145,19 +169,31 @@ const TransactionDetails = () => {
 
           {transaction.type === 'buy' && (
             <>
-              <div style={{ backgroundColor: '#f3f4f6', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-                <div style={{ fontSize: '0.9em', color: '#6b7280', marginBottom: '4px' }}>Сумма</div>
-                <div style={{ fontSize: '1.1em', fontWeight: '600' }}>
+              <div style={{ 
+                background: 'rgba(255, 255, 255, 0.08)', 
+                padding: '20px', 
+                borderRadius: '12px', 
+                marginBottom: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.1)'
+              }}>
+                <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '8px' }}>Сумма</div>
+                <div style={{ fontSize: '1.3rem', fontWeight: '600', color: 'white' }}>
                   {transaction.amount_rub} ₽
                 </div>
               </div>
 
               {transaction.usdt_address && (
-                <div style={{ backgroundColor: '#f0f9ff', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-                  <div style={{ fontSize: '0.9em', color: '#1e40af', marginBottom: '4px', fontWeight: '600' }}>
+                <div style={{ 
+                  background: 'rgba(96, 165, 250, 0.15)', 
+                  padding: '20px', 
+                  borderRadius: '12px', 
+                  marginBottom: '16px',
+                  border: '1px solid rgba(96, 165, 250, 0.3)'
+                }}>
+                  <div style={{ fontSize: '1rem', color: '#60a5fa', marginBottom: '12px', fontWeight: '600' }}>
                     💼 Ваш USDT адрес
                   </div>
-                  <div style={{ fontSize: '0.85em', wordBreak: 'break-all', fontFamily: 'monospace' }}>
+                  <div style={{ fontSize: '0.95rem', wordBreak: 'break-all', fontFamily: 'monospace', color: 'white' }}>
                     {transaction.usdt_address}
                   </div>
                 </div>
@@ -165,33 +201,50 @@ const TransactionDetails = () => {
             </>
           )}
 
-          <div style={{ backgroundColor: '#f3f4f6', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-            <div style={{ fontSize: '0.9em', color: '#6b7280', marginBottom: '4px' }}>Способ оплаты</div>
-            <div style={{ fontSize: '1em' }}>
+          <div style={{ 
+            background: 'rgba(255, 255, 255, 0.08)', 
+            padding: '20px', 
+            borderRadius: '12px', 
+            marginBottom: '16px',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '8px' }}>Способ оплаты</div>
+            <div style={{ fontSize: '1.05rem', color: 'white' }}>
               {transaction.payment_method === 'bank' ? '🏦 Банковский счет' : '💳 Карта'}
             </div>
             {transaction.bank_name && (
-              <div style={{ fontSize: '0.9em', marginTop: '4px' }}>
+              <div style={{ fontSize: '0.95rem', marginTop: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>
                 Банк: {transaction.bank_name}
               </div>
             )}
             {transaction.phone_number && (
-              <div style={{ fontSize: '0.9em', marginTop: '4px' }}>
+              <div style={{ fontSize: '0.95rem', marginTop: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>
                 Телефон: {transaction.phone_number}
               </div>
             )}
           </div>
 
-          <div style={{ backgroundColor: '#f3f4f6', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-            <div style={{ fontSize: '0.9em', color: '#6b7280', marginBottom: '4px' }}>Создано</div>
-            <div style={{ fontSize: '0.9em' }}>
+          <div style={{ 
+            background: 'rgba(255, 255, 255, 0.08)', 
+            padding: '20px', 
+            borderRadius: '12px', 
+            marginBottom: '16px',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }}>
+            <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '8px' }}>Создано</div>
+            <div style={{ fontSize: '1rem', color: 'white' }}>
               {new Date(transaction.created_at).toLocaleString('ru-RU')}
             </div>
           </div>
 
           {transaction.status === 'pending' && transaction.type === 'sell' && (
-            <div style={{ backgroundColor: '#dbeafe', padding: '16px', borderRadius: '8px', border: '2px solid #3b82f6' }}>
-              <div style={{ fontSize: '0.95em', color: '#1e40af' }}>
+            <div style={{ 
+              background: 'rgba(59, 130, 246, 0.15)', 
+              padding: '20px', 
+              borderRadius: '12px', 
+              border: '1px solid rgba(59, 130, 246, 0.3)'
+            }}>
+              <div style={{ fontSize: '1rem', color: '#60a5fa' }}>
                 ℹ️ Эта страница обновляется автоматически каждые 10 секунд. Сохраните ссылку для отслеживания статуса.
               </div>
             </div>
