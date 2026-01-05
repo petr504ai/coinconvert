@@ -1,4 +1,5 @@
 from tronpy import Tron
+from tronpy.providers import HTTPProvider
 from tronpy.keys import PrivateKey
 from decimal import Decimal
 from ..config import settings
@@ -32,17 +33,44 @@ def retry_on_rate_limit(func):
 class TronWallet:
     def __init__(self):
         # Connect to TronGrid API with proper configuration
+        print("=" * 80)
+        print("INITIALIZING TRON WALLET")
+        print("=" * 80)
+        logger.info("=" * 80)
+        logger.info("INITIALIZING TRON WALLET")
+        logger.info("=" * 80)
         logger.info(f"Initializing TronWallet for mainnet")
         
         try:
-            # Set API key as environment variable for tronpy
+            # Create custom HTTP provider with API key in headers
             if settings.trongrid_api_key:
-                os.environ['TRON_PRO_API_KEY'] = settings.trongrid_api_key
-                logger.info(f"Using TronGrid API with key (starting with: {settings.trongrid_api_key[:10]}...)")
+                print(f"✅ TronGrid API key found: {settings.trongrid_api_key[:10]}...")
+                logger.info(f"TronGrid API key found in settings")
+                logger.info(f"API key length: {len(settings.trongrid_api_key)}")
+                logger.info(f"API key starts with: {settings.trongrid_api_key[:10]}...")
+                
+                # Create HTTPProvider with custom headers
+                provider = HTTPProvider(
+                    endpoint_uri='https://api.trongrid.io',
+                    api_key=settings.trongrid_api_key
+                )
+                
+                print(f"✅ Created HTTPProvider with API key")
+                logger.info(f"Created HTTPProvider with API key")
+                logger.info(f"Provider endpoint: {provider.endpoint_uri}")
+                
+                # Initialize Tron client with custom provider
+                self.client = Tron(provider=provider)
+                print(f"✅ Tron client created with authenticated provider")
+                logger.info(f"✅ Tron client created with authenticated provider")
             else:
-                logger.warning("No TronGrid API key configured. Using free tier (rate limited). Set TRONGRID_API_KEY in .env")
+                print("⚠️ No TronGrid API key configured - using free tier")
+                logger.warning("⚠️ No TronGrid API key configured. Using free tier (rate limited).")
+                logger.warning("Set TRONGRID_API_KEY in .env file")
+                self.client = Tron(network='mainnet')
             
-            self.client = Tron(network='mainnet')
+            logger.info(f"Tron client created: {type(self.client)}")
+            logger.info(f"Tron client provider: {type(self.client.provider)}")
             
             # USDT TRC-20 contract
             logger.info(f"Loading USDT contract: {settings.usdt_trc20_contract}")
@@ -54,13 +82,32 @@ class TronWallet:
     
     def _get_contract_with_retry(self, address):
         """Get contract with retry logic for rate limiting"""
+        logger.info(f"📋 Attempting to get contract: {address}")
+        logger.info(f"🔑 Checking API key status before request...")
+        logger.info(f"   TRON_PRO_API_KEY env var: {'SET' if os.environ.get('TRON_PRO_API_KEY') else 'NOT SET'}")
+        
         for attempt in range(settings.max_retries):
             try:
-                return self.client.get_contract(address)
+                logger.info(f"🌐 Making API request to TronGrid (attempt {attempt + 1}/{settings.max_retries})...")
+                contract = self.client.get_contract(address)
+                logger.info(f"✅ Contract retrieved successfully!")
+                return contract
             except Exception as e:
-                if '429' in str(e) and attempt < settings.max_retries - 1:
-                    wait_time = settings.retry_delay * (2 ** attempt)
-                    logger.warning(f"Rate limited during contract init, retrying in {wait_time}s (attempt {attempt + 1}/{settings.max_retries})...")
+                error_msg = str(e)
+                logger.error(f"❌ Error getting contract: {error_msg}")
+                logger.error(f"   Error type: {type(e).__name__}")
+                
+                if '401' in error_msg:
+                    logger.error("⚠️ 401 UNAUTHORIZED - API key is not being accepted by TronGrid!")
+                    logger.error("   This means the API key is either:")
+                    logger.error("   1. Not being sent in the request")
+                    logger.error("   2. Invalid or expired")
+                    logger.error("   3. Not in the correct format")
+                elif '429' in error_msg:
+                    logger.error("⚠️ 429 RATE LIMITED - Too many requests")
+                    if attempt < settings.max_retries - 1:
+                        wait_time = settings.retry_delay * (2 ** attempt)
+                        logger.warning(f"Rate limited during contract init, retrying in {wait_time}s (attempt {attempt + 1}/{settings.max_retries})...")
                     time.sleep(wait_time)
                 else:
                     if '429' in str(e):

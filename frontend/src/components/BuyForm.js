@@ -12,6 +12,27 @@ const BuyForm = ({ token, onSubmit }) => {
   const [pricing, setPricing] = useState(null);
   const [estimatedUsdt, setEstimatedUsdt] = useState(0);
   const [loadingPricing, setLoadingPricing] = useState(true);
+  const [trackingHash, setTrackingHash] = useState('');
+  const [addressError, setAddressError] = useState('');
+
+  const validateTronAddress = (addr) => {
+    // Basic Tron address validation
+    if (!addr) return '';
+    if (addr.length !== 34) return 'Адрес должен содержать 34 символа';
+    if (!addr.startsWith('T')) return 'Адрес Tron должен начинаться с T';
+    if (!/^[A-HJ-NP-Za-km-z1-9]+$/.test(addr)) return 'Недопустимые символы в адресе';
+    return '';
+  };
+
+  const handleAddressChange = (e) => {
+    const value = e.target.value.trim();
+    setAddress(value);
+    if (value) {
+      setAddressError(validateTronAddress(value));
+    } else {
+      setAddressError('');
+    }
+  };
 
   useEffect(() => {
     // Fetch current pricing
@@ -86,13 +107,32 @@ const BuyForm = ({ token, onSubmit }) => {
           </span>
         ) : null}
       </h2>
-      {pricing && (
-        <div style={{ backgroundColor: '#fef3c7', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9em' }}>
-          💹 <strong>Текущий курс:</strong> 1 USDT = {pricing.buy_price.toFixed(2)} ₽ (рыночный: {pricing.market_rate.toFixed(2)} ₽)
-          <br />
-          📊 Спред: {pricing.spread.toFixed(2)} ₽
+
+      {/* Transaction Tracking */}
+      <div style={{ backgroundColor: '#fef3c7', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
+        <div style={{ fontSize: '0.9em', fontWeight: '600', marginBottom: '8px', color: '#92400e' }}>
+          🔍 Отследить транзакцию
         </div>
-      )}
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <input
+            type="text"
+            placeholder="Введите хеш транзакции"
+            value={trackingHash}
+            onChange={(e) => setTrackingHash(e.target.value)}
+            style={{ flex: 1, padding: '10px', fontSize: '0.9em' }}
+          />
+          <button
+            type="button"
+            onClick={() => trackingHash && navigate(`/transaction/${trackingHash}`)}
+            disabled={!trackingHash}
+            className="secondary"
+            style={{ padding: '10px 20px', whiteSpace: 'nowrap' }}
+          >
+            Перейти
+          </button>
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="amount">Сумма (RUB)</label>

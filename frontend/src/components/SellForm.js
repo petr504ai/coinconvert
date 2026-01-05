@@ -13,6 +13,7 @@ const SellForm = ({ token, onSubmit }) => {
   const [pricing, setPricing] = useState(null);
   const [estimatedRub, setEstimatedRub] = useState(0);
   const [loadingPricing, setLoadingPricing] = useState(true);
+  const [trackingHash, setTrackingHash] = useState('');
 
   useEffect(() => {
     // Fetch current pricing
@@ -88,13 +89,32 @@ const SellForm = ({ token, onSubmit }) => {
           </span>
         ) : null}
       </h2>
-      {pricing && (
-        <div style={{ backgroundColor: '#f0f9ff', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9em' }}>
-          💹 <strong>Текущий курс:</strong> 1 USDT = {pricing.sell_price.toFixed(2)} ₽ (рыночный: {pricing.market_rate.toFixed(2)} ₽)
-          <br />
-          📊 Спред: {pricing.spread.toFixed(2)} ₽
+
+      {/* Transaction Tracking */}
+      <div style={{ backgroundColor: '#eff6ff', padding: '16px', borderRadius: '8px', marginBottom: '20px' }}>
+        <div style={{ fontSize: '0.9em', fontWeight: '600', marginBottom: '8px', color: '#1e40af' }}>
+          🔍 Отследить транзакцию
         </div>
-      )}
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <input
+            type="text"
+            placeholder="Введите хеш транзакции"
+            value={trackingHash}
+            onChange={(e) => setTrackingHash(e.target.value)}
+            style={{ flex: 1, padding: '10px', fontSize: '0.9em' }}
+          />
+          <button
+            type="button"
+            onClick={() => trackingHash && navigate(`/transaction/${trackingHash}`)}
+            disabled={!trackingHash}
+            className="secondary"
+            style={{ padding: '10px 20px', whiteSpace: 'nowrap' }}
+          >
+            Перейти
+          </button>
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="amount">Сумма (USDT)</label>
