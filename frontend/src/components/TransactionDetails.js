@@ -208,6 +208,41 @@ const TransactionDetails = () => {
                 </div>
               </div>
 
+              {/* Merchant Payment Details */}
+              <div style={{ 
+                background: 'rgba(251, 191, 36, 0.15)', 
+                padding: '20px', 
+                borderRadius: '12px', 
+                marginBottom: '16px',
+                border: '1px solid rgba(251, 191, 36, 0.3)'
+              }}>
+                <div style={{ fontSize: '1rem', color: '#fbbf24', marginBottom: '16px', fontWeight: '600' }}>
+                  💳 Реквизиты для перевода RUB
+                </div>
+                <div style={{ marginBottom: '12px' }}>
+                  <div style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)', marginBottom: '4px' }}>Телефон:</div>
+                  <div style={{ fontSize: '1rem', fontFamily: 'monospace', color: 'white', marginBottom: '8px' }}>
+                    +79123456789
+                  </div>
+                  <button 
+                    className="secondary" 
+                    onClick={() => copyToClipboard('+79123456789')}
+                    style={{ width: 'auto', padding: '8px 16px', fontSize: '0.85rem' }}
+                  >
+                    📋 Копировать
+                  </button>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)', marginBottom: '4px' }}>Банк:</div>
+                  <div style={{ fontSize: '1rem', color: 'white', marginBottom: '8px' }}>
+                    Сбербанк
+                  </div>
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#fbbf24', marginTop: '16px', padding: '12px', background: 'rgba(251, 191, 36, 0.1)', borderRadius: '8px' }}>
+                  ⚠️ Переведите <b>{transaction.amount_rub} ₽</b> на указанный номер телефона через СБП в указанный банк. После перевода статус будет обновлен, и USDT будут отправлены на ваш адрес. Переводы на неправильные реквизиты возврату не подлежат.
+                </div>
+              </div>
+
               {transaction.usdt_address && (
                 <div style={{ 
                   background: 'rgba(96, 165, 250, 0.15)', 
@@ -227,28 +262,31 @@ const TransactionDetails = () => {
             </>
           )}
 
-          <div style={{ 
-            background: 'rgba(255, 255, 255, 0.08)', 
-            padding: '20px', 
-            borderRadius: '12px', 
-            marginBottom: '16px',
-            border: '1px solid rgba(255, 255, 255, 0.1)'
-          }}>
-            <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '8px' }}>Способ оплаты</div>
-            <div style={{ fontSize: '1.05rem', color: 'white' }}>
-              {transaction.payment_method === 'bank' ? '🏦 Банковский счет (СБП)' : '💳 Карта'}
+          {/* Payment method section - only for sell transactions */}
+          {transaction.type === 'sell' && (
+            <div style={{ 
+              background: 'rgba(255, 255, 255, 0.08)', 
+              padding: '20px', 
+              borderRadius: '12px', 
+              marginBottom: '16px',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <div style={{ fontSize: '0.95rem', color: 'rgba(255, 255, 255, 0.7)', marginBottom: '8px' }}>Способ оплаты</div>
+              <div style={{ fontSize: '1.05rem', color: 'white' }}>
+                {transaction.payment_method === 'bank' ? '🏦 Банковский счет (СБП)' : '💳 Карта'}
+              </div>
+              {transaction.bank_name && (
+                <div style={{ fontSize: '0.95rem', marginTop: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>
+                  Банк: {transaction.bank_name}
+                </div>
+              )}
+              {transaction.phone_number && (
+                <div style={{ fontSize: '0.95rem', marginTop: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>
+                  Телефон: {transaction.phone_number}
+                </div>
+              )}
             </div>
-            {transaction.bank_name && (
-              <div style={{ fontSize: '0.95rem', marginTop: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>
-                Банк: {transaction.bank_name}
-              </div>
-            )}
-            {transaction.phone_number && (
-              <div style={{ fontSize: '0.95rem', marginTop: '8px', color: 'rgba(255, 255, 255, 0.8)' }}>
-                Телефон: {transaction.phone_number}
-              </div>
-            )}
-          </div>
+          )}
 
           <div style={{ 
             background: 'rgba(255, 255, 255, 0.08)', 

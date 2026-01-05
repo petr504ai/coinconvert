@@ -44,6 +44,10 @@ class Settings(BaseSettings):
     telegram_chat_id: str = ""
     telegram_admin_chat_id: str = ""  # Admin user who can use bot commands
     
+    # Merchant Payment Details (for users to send RUB when buying USDT)
+    merchant_phone_number: str = ""
+    merchant_bank_name: str = ""
+    
     class Config:
         env_file = env_file
         env_file_encoding = 'utf-8'

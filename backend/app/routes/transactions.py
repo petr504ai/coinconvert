@@ -50,8 +50,8 @@ def create_transaction(transaction: TransactionCreate):
     logger.info(f"USDT address: {transaction.usdt_address}")
     logger.info("=" * 80)
     
-    # Validate phone number format if provided
-    if transaction.phone_number:
+    # Validate phone number format if provided (only for sell transactions)
+    if transaction.type == "sell" and transaction.phone_number:
         phone_pattern = r'^\+7\d{10}$'
         if not re.match(phone_pattern, transaction.phone_number):
             logger.warning(f"Invalid phone number format: {transaction.phone_number}")

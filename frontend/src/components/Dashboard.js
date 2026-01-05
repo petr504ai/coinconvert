@@ -38,7 +38,39 @@ const Dashboard = ({ token, onLogout, onShowLogin }) => {
     <div className="app-container">
       <div className="app-header">
         <img src="/logo.png" alt="CoinConvert" style={{ maxWidth: '480px', height: 'auto', marginBottom: '8px' }} />
-        <p className="subtitle">Обмен USDT на рубли</p>
+        <p className="subtitle">
+          Обмен USDT на рубли
+          <a 
+            href="https://t.me/coinconvert_ru_bot" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              marginLeft: '16px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 16px',
+              background: 'rgba(42, 171, 238, 0.15)',
+              border: '1px solid rgba(42, 171, 238, 0.3)',
+              borderRadius: '8px',
+              color: '#2aabee',
+              textDecoration: 'none',
+              fontSize: '0.9rem',
+              fontWeight: '500',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(42, 171, 238, 0.25)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'rgba(42, 171, 238, 0.15)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            💬 Поддержка в Telegram
+          </a>
+        </p>
       </div>
 
       {/* Transaction Tracking */}

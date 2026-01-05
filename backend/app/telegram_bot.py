@@ -1,6 +1,6 @@
 import logging
 from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from decimal import Decimal
 from .config import settings
 from .sheets_db import sheets_db
@@ -27,24 +27,39 @@ class CoinConvertBot:
         """Handle /start command"""
         user = update.effective_user
         
-        welcome_message = f"""
+        if self.is_admin(user.id):
+            welcome_message = f"""
 👋 Привет, {user.first_name}!
 
 Я бот CoinConvert для управления транзакциями.
 
-<b>Доступные команды:</b>
+<b>Команды администратора:</b>
 /check [ID] - Проверить статус транзакции
+/markpaid [ID] - Отметить buy-транзакцию как оплаченную
 /list - Показать последние транзакции
 /help - Показать это сообщение
 
-<b>Примеры:</b>
-/check 5 - Проверить транзакцию с ID 5
+<b>Поддержка пользователей:</b>
+Просто отправьте сообщение в ответ на сообщение пользователя, и оно будет переслано ему.
+
+✅ У вас есть права администратора
 """
-        
-        if self.is_admin(user.id):
-            welcome_message += "\n✅ У вас есть права администратора"
         else:
-            welcome_message += "\n⚠️ У вас нет прав администратора"
+            welcome_message = f"""
+👋 Привет, {user.first_name}!
+
+Добро пожаловать в службу поддержки CoinConvert!
+
+💬 <b>Как связаться с нами:</b>
+Просто напишите ваш вопрос в этот чат, и мы ответим вам в ближайшее время.
+
+<b>О чем можно спросить:</b>
+• Статус транзакции
+• Проблемы с платежом
+• Общие вопросы об обмене
+
+⏰ Обычно мы отвечаем в течение нескольких минут.
+"""
         
         await update.message.reply_text(welcome_message, parse_mode='HTML')
     
@@ -55,6 +70,9 @@ class CoinConvertBot:
 
 <b>/check [ID]</b> - Проверить статус транзакции
 Пример: /check 5
+
+<b>/markpaid [ID]</b> - Отметить buy-транзакцию как оплаченную
+Пример: /markpaid 5
 
 <b>/list</b> - Показать последние 5 транзакций
 
@@ -229,6 +247,142 @@ class CoinConvertBot:
             logger.error(f"Error listing transactions: {e}")
             await update.message.reply_text(f"❌ Ошибка: {str(e)}")
     
+    async def markpaid_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle /markpaid [ID] command - mark buy transaction as paid"""
+        user = update.effective_user
+        
+        # Check admin rights
+        if not self.is_admin(user.id):
+            await update.message.reply_text("❌ У вас нет прав для использования этой команды")
+            return
+        
+        # Check if ID provided
+        if not context.args or len(context.args) == 0:
+            await update.message.reply_text(
+                "❌ Укажите ID транзакции\n\nПример: /markpaid 5",
+                parse_mode='HTML'
+            )
+            return
+        
+        try:
+            transaction_id = int(context.args[0])
+        except ValueError:
+            await update.message.reply_text("❌ ID транзакции должен быть числом")
+            return
+        
+        try:
+            # Get transaction from database
+            all_transactions = sheets_db.get_all_transactions()
+            transaction = None
+            
+            for tx in all_transactions:
+                if tx.get('id') == transaction_id or str(tx.get('id')) == str(transaction_id):
+                    transaction = tx
+                    break
+            
+            if not transaction:
+                await update.message.reply_text(f"❌ Транзакция #{transaction_id} не найдена")
+                return
+            
+            # Check if it's a buy transaction
+            if transaction.get('type') != 'buy':
+                await update.message.reply_text(
+                    f"❌ Транзакция #{transaction_id} не является buy-транзакцией\n"
+                    f"Тип: {transaction.get('type', 'unknown')}"
+                )
+                return
+            
+            # Check current status
+            current_status = transaction.get('status', 'unknown')
+            if current_status == 'completed':
+                await update.message.reply_text(f"✅ Транзакция #{transaction_id} уже отмечена как завершенная")
+                return
+            
+            # Update to completed
+            sheets_db.update_transaction(transaction_id, {'status': 'completed'})
+            logger.info(f"Transaction #{transaction_id} marked as paid/completed by admin via bot")
+            
+            # Build confirmation message
+            amount_usdt = transaction.get('amount_usdt', 'N/A')
+            amount_rub = transaction.get('amount_rub', 'N/A')
+            usdt_address = transaction.get('usdt_address', 'N/A')
+            
+            message = f"✅ <b>Транзакция #{transaction_id} отмечена как оплаченная!</b>\n\n"
+            message += f"<b>Тип:</b> BUY\n"
+            message += f"<b>USDT:</b> {amount_usdt}\n"
+            message += f"<b>RUB:</b> {amount_rub}\n"
+            message += f"<b>Адрес USDT:</b> <code>{usdt_address}</code>\n\n"
+            message += "⚠️ Не забудьте отправить USDT на указанный адрес!"
+            
+            await update.message.reply_text(message, parse_mode='HTML')
+            
+        except Exception as e:
+            logger.error(f"Error marking transaction as paid: {e}")
+            await update.message.reply_text(f"❌ Ошибка: {str(e)}")
+    
+    async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handle regular messages for support forwarding"""
+        user = update.effective_user
+        message = update.message
+        
+        # If message is from admin
+        if self.is_admin(user.id):
+            # Check if it's a reply to a forwarded message
+            if message.reply_to_message:
+                # Try to extract original user ID from the forwarded message
+                # The forwarded message should contain user info in text or we track it
+                replied_text = message.reply_to_message.text or message.reply_to_message.caption or ""
+                
+                # Look for user ID pattern in the replied message
+                if "User ID:" in replied_text:
+                    try:
+                        user_id_start = replied_text.find("User ID:") + 8
+                        user_id_line = replied_text[user_id_start:].split('\n')[0].strip()
+                        original_user_id = int(user_id_line)
+                        
+                        # Send admin's reply to the original user
+                        response_text = f"💬 <b>Ответ от поддержки CoinConvert:</b>\n\n{message.text}"
+                        
+                        await context.bot.send_message(
+                            chat_id=original_user_id,
+                            text=response_text,
+                            parse_mode='HTML'
+                        )
+                        
+                        await message.reply_text("✅ Сообщение отправлено пользователю")
+                        logger.info(f"Admin replied to user {original_user_id}")
+                        
+                    except Exception as e:
+                        logger.error(f"Error parsing user ID from reply: {e}")
+                        await message.reply_text("❌ Не удалось определить пользователя для ответа")
+                else:
+                    await message.reply_text("⚠️ Ответьте на сообщение пользователя, чтобы отправить ему ответ")
+            else:
+                # Admin sent a regular message (not a reply)
+                await message.reply_text("💡 Ответьте на сообщение пользователя, чтобы отправить ему ответ")
+        
+        else:
+            # Message from regular user - forward to admin
+            user_info = f"👤 <b>Новое сообщение от пользователя</b>\n\n"
+            user_info += f"Имя: {user.first_name or ''} {user.last_name or ''}\n"
+            user_info += f"Username: @{user.username}\n" if user.username else ""
+            user_info += f"User ID: {user.id}\n\n"
+            user_info += f"<b>Сообщение:</b>\n{message.text}"
+            
+            await context.bot.send_message(
+                chat_id=self.admin_chat_id,
+                text=user_info,
+                parse_mode='HTML'
+            )
+            
+            await message.reply_text(
+                "✅ Ваше сообщение получено!\n\n"
+                "Наша служба поддержки ответит вам в ближайшее время.",
+                parse_mode='HTML'
+            )
+            
+            logger.info(f"Support message from user {user.id} ({user.username}) forwarded to admin")
+    
     async def error_handler(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle errors"""
         logger.error(f"Update {update} caused error {context.error}")
@@ -245,7 +399,11 @@ class CoinConvertBot:
         self.application.add_handler(CommandHandler("start", self.start_command))
         self.application.add_handler(CommandHandler("help", self.help_command))
         self.application.add_handler(CommandHandler("check", self.check_command))
+        self.application.add_handler(CommandHandler("markpaid", self.markpaid_command))
         self.application.add_handler(CommandHandler("list", self.list_command))
+        
+        # Add message handler for support messages (must be after commands)
+        self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
         
         # Add error handler
         self.application.add_error_handler(self.error_handler)

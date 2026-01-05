@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import BankSelect from './BankSelect';
 
 const BuyForm = ({ token, onSubmit }) => {
   const navigate = useNavigate();
   const [amount, setAmount] = useState('');
   const [inputCurrency, setInputCurrency] = useState('usdt'); // 'usdt' or 'rub'
-  const [phone, setPhone] = useState('');
-  const [bank, setBank] = useState('');
   const [address, setAddress] = useState('');
   const [pricing, setPricing] = useState(null);
   const [calculatedAmount, setCalculatedAmount] = useState(0);
@@ -69,8 +66,6 @@ const BuyForm = ({ token, onSubmit }) => {
       amount_usdt: amount_usdt,
       amount_rub: amount_rub,
       payment_method: 'bank',
-      phone_number: phone,
-      bank_name: bank,
       usdt_address: address,
     };
     try {
@@ -83,8 +78,6 @@ const BuyForm = ({ token, onSubmit }) => {
       navigate(`/transaction/${response.data.hash}`);
       
       setAmount('');
-      setPhone('');
-      setBank('');
       setAddress('');
       onSubmit();
     } catch (error) {
@@ -188,27 +181,6 @@ const BuyForm = ({ token, onSubmit }) => {
           )}
         </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="phone">Номер телефона</label>
-            <input
-              id="phone"
-              type="tel"
-              placeholder="+7XXXXXXXXXX"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-            />
-          </div>
-          <div className="bank-select-wrapper">
-            <BankSelect
-              value={bank}
-              onChange={setBank}
-              label="Название банка"
-            />
-          </div>
-        </div>
-
         <div className="form-group">
           <label htmlFor="address">Ваш USDT адрес (TRC-20)</label>
           <input
@@ -219,6 +191,9 @@ const BuyForm = ({ token, onSubmit }) => {
             onChange={(e) => setAddress(e.target.value)}
             required
           />
+          <small style={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.85rem', marginTop: '8px', display: 'block' }}>
+            💡 После отправки вы увидите реквизиты для перевода RUB
+          </small>
         </div>
 
         <button type="submit" className="form-submit" style={{ marginTop: '24px' }}>Отправить заявку на покупку</button>
