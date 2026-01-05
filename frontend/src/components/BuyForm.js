@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import BankSelect from './BankSelect';
 
@@ -7,6 +7,35 @@ const BuyForm = ({ token, onSubmit }) => {
   const [phone, setPhone] = useState('');
   const [bank, setBank] = useState('');
   const [address, setAddress] = useState('');
+  const [pricing, setPricing] = useState(null);
+  const [estimatedUsdt, setEstimatedUsdt] = useState(0);
+
+  useEffect(() => {
+    // Fetch current pricing
+    const fetchPricing = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/pricing');
+        setPricing(response.data);
+      } catch (error) {
+        console.error('Error fetching pricing:', error);
+      }
+    };
+    
+    fetchPricing();
+    // Refresh pricing every 5 minutes
+    const interval = setInterval(fetchPricing, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    // Calculate estimated USDT amount
+    if (amount && pricing) {
+      const usdt = parseFloat(amount) / pricing.buy_price;
+      setEstimatedUsdt(usdt.toFixed(6));
+    } else {
+      setEstimatedUsdt(0);
+    }
+  }, [amount, pricing]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +65,21 @@ const BuyForm = ({ token, onSubmit }) => {
 
   return (
     <div className="form-container">
-      <h2>💰 Купить USDT за RUB</h2>
+      <h2>
+        💰 Купить USDT за RUB
+        {pricing && (
+          <span style={{ display: 'block', fontSize: '0.7em', fontWeight: '400', color: '#6366f1', marginTop: '8px' }}>
+            {pricing.buy_price.toFixed(2)} ₽ за 1 USDT
+          </span>
+        )}
+      </h2>
+      {pricing && (
+        <div style={{ backgroundColor: '#fef3c7', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9em' }}>
+          💹 <strong>Текущий курс:</strong> 1 USDT = {pricing.buy_price.toFixed(2)} ₽ (рыночный: {pricing.market_rate.toFixed(2)} ₽)
+          <br />
+          📊 Спред: {pricing.spread.toFixed(2)} ₽
+        </div>
+      )}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="amount">Сумма (RUB)</label>
@@ -50,6 +93,11 @@ const BuyForm = ({ token, onSubmit }) => {
             min="1"
             required
           />
+          {estimatedUsdt > 0 && (
+            <small style={{ color: '#6366f1', fontWeight: '600', marginTop: '8px', display: 'block' }}>
+              ≈ {estimatedUsdt} USDT
+            </small>
+          )}
         </div>
 
         <div className="form-row">

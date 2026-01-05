@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import SellForm from './SellForm';
 import BuyForm from './BuyForm';
@@ -7,13 +7,7 @@ const Dashboard = ({ token, onLogout, onShowLogin }) => {
   const [transactions, setTransactions] = useState([]);
   const [view, setView] = useState('sell');
 
-  useEffect(() => {
-    if (token) {
-      fetchTransactions();
-    }
-  }, [token]);
-
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     try {
       const response = await axios.get('http://localhost:8000/api/transactions', {
         headers: { Authorization: `Bearer ${token}` }
@@ -22,7 +16,13 @@ const Dashboard = ({ token, onLogout, onShowLogin }) => {
     } catch (error) {
       console.error(error);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (token) {
+      fetchTransactions();
+    }
+  }, [token, fetchTransactions]);
 
   const handleTransaction = () => {
     if (token) {

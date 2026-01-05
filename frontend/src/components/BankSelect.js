@@ -64,7 +64,8 @@ const BankSelect = ({ value, onChange, label = 'Выберите банк' }) =>
 
   return (
     <div className="bank-select-wrapper">
-      <label htmlFor="bank-input">{label}</label>\n      <div className="bank-select-container">
+      <label htmlFor="bank-input">{label}</label>
+      <div className="bank-select-container">
         <input
           id="bank-input"
           type="text"
