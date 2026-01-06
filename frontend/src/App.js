@@ -1,9 +1,24 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import TransactionDetails from './components/TransactionDetails';
 import './App.css';
+
+// Matomo page tracking component
+function MatomoTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (window._paq) {
+      window._paq.push(['setCustomUrl', window.location.href]);
+      window._paq.push(['setDocumentTitle', document.title]);
+      window._paq.push(['trackPageView']);
+    }
+  }, [location]);
+
+  return null;
+}
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
@@ -22,6 +37,7 @@ function App() {
 
   return (
     <Router>
+      <MatomoTracker />
       <div className="App">
         <Routes>
           <Route path="/transaction/:hash" element={<TransactionDetails />} />
