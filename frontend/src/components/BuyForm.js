@@ -19,10 +19,29 @@ const BuyForm = ({ token, onSubmit }) => {
     const fetchPricing = async () => {
       setLoadingPricing(true);
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/pricing`);
+        // Try /api/pricing first, fallback to /pricing for old backend
+        let response;
+        try {
+          response = await axios.get(`${API_BASE_URL}/api/pricing`);
+        } catch (e) {
+          console.log('Failed to fetch from /api/pricing:', e.response?.status, e.message);
+          if (e.response?.status === 404) {
+            console.log('Trying /pricing endpoint...');
+            response = await axios.get(`${API_BASE_URL}/pricing`);
+          } else {
+            throw e;
+          }
+        }
+        console.log('Pricing data received:', response.data);
         setPricing(response.data);
       } catch (error) {
         console.error('Error fetching pricing:', error);
+        console.error('Error details:', {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data,
+          url: error.config?.url
+        });
       } finally {
         setLoadingPricing(false);
       }

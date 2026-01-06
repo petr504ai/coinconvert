@@ -23,7 +23,17 @@ const SellForm = ({ token, onSubmit }) => {
     const fetchPricing = async () => {
       setLoadingPricing(true);
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/pricing`);
+        // Try /api/pricing first, fallback to /pricing for old backend
+        let response;
+        try {
+          response = await axios.get(`${API_BASE_URL}/api/pricing`);
+        } catch (e) {
+          if (e.response?.status === 404) {
+            response = await axios.get(`${API_BASE_URL}/pricing`);
+          } else {
+            throw e;
+          }
+        }
         setPricing(response.data);
       } catch (error) {
         console.error('Error fetching pricing:', error);

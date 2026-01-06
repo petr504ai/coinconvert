@@ -42,7 +42,10 @@ app.add_middleware(
 def read_root():
     return {"message": "Welcome to CoinConvert"}
 
-@app.get("/api/pricing")
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
+app.include_router(transactions.router, prefix="/api", tags=["transactions"])
+
+@app.get("/pricing")
 def get_pricing():
     """Get current exchange rates and pricing"""
     if not has_pricing:
@@ -52,6 +55,3 @@ def get_pricing():
     except Exception as e:
         print(f"Error in pricing endpoint: {e}")
         return {"error": str(e)}
-
-app.include_router(auth.router, prefix="/auth", tags=["auth"])
-app.include_router(transactions.router, prefix="/api", tags=["transactions"])
