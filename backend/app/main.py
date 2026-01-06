@@ -42,8 +42,10 @@ app.add_middleware(
 def read_root():
     return {"message": "Welcome to CoinConvert"}
 
+# Include routers twice - with and without /api prefix to support both local dev and production proxy
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
-app.include_router(transactions.router, tags=["transactions"])  # No prefix - proxy strips /api
+app.include_router(transactions.router, prefix="/api", tags=["transactions"])  # For local dev (with /api)
+app.include_router(transactions.router, tags=["transactions"])  # For production proxy (strips /api)
 
 @app.get("/pricing")
 def get_pricing():

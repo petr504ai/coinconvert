@@ -392,7 +392,11 @@ button:disabled {
 /* Responsive */
 @media (max-width: 640px) {
   .logo {
-    max-width: 280px;
+    max-width: 200px;
+  }
+
+  .app-header {
+    padding: 20px 16px;
   }
 
   .app-container {

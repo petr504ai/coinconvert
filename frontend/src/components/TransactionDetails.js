@@ -80,7 +80,37 @@ const TransactionDetails = () => {
     <div className="app-container">
       <div className="app-header">
         <img src="/logo.png" alt="CoinConvert" className="logo" style={{ height: 'auto', marginBottom: '8px' }} />
-        <p>Детали транзакции</p>
+        <p>Детали транзакции
+          <a 
+            href="https://t.me/coinconvert_ru_bot" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              marginLeft: '16px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 16px',
+              background: 'rgba(42, 171, 238, 0.15)',
+              border: '1px solid rgba(42, 171, 238, 0.3)',
+              borderRadius: '8px',
+              color: '#2aabee',
+              textDecoration: 'none',
+              fontSize: '0.9rem',
+              fontWeight: '500',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(42, 171, 238, 0.25)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'rgba(42, 171, 238, 0.15)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            💬 Поддержка в Telegram
+          </a></p>
       </div>
 
       <button className="secondary" onClick={() => navigate('/')} style={{ marginBottom: '20px' }}>
@@ -225,11 +255,11 @@ const TransactionDetails = () => {
                 <div style={{ marginBottom: '12px' }}>
                   <div style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)', marginBottom: '4px' }}>Телефон:</div>
                   <div style={{ fontSize: '1rem', fontFamily: 'monospace', color: 'white', marginBottom: '8px' }}>
-                    +79123456789
+                    +7912XXXX6789
                   </div>
                   <button 
                     className="secondary" 
-                    onClick={() => copyToClipboard('+79123456789')}
+                    onClick={() => copyToClipboard('+7912XXXX6789')}
                     style={{ width: 'auto', padding: '8px 16px', fontSize: '0.85rem' }}
                   >
                     📋 Копировать
@@ -255,7 +285,7 @@ const TransactionDetails = () => {
                   border: '1px solid rgba(96, 165, 250, 0.3)'
                 }}>
                   <div style={{ fontSize: '1rem', color: '#60a5fa', marginBottom: '12px', fontWeight: '600' }}>
-                    💼 Ваш USDT адрес
+                    💼 Ваш адрес куда будут отправлены USDT (TRC-20) после оплаты 
                   </div>
                   <div style={{ fontSize: '0.95rem', wordBreak: 'break-all', fontFamily: 'monospace', color: 'white' }}>
                     {transaction.usdt_address}

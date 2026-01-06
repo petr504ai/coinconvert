@@ -40,6 +40,14 @@ const Dashboard = ({ token, onLogout, onShowLogin }) => {
   return (
     <div className="app-container">
       <div className="app-header">
+        <p style={{ 
+          fontSize: '0.9rem', 
+          color: 'rgba(255, 255, 255, 0.7)', 
+          marginBottom: '16px',
+          lineHeight: '1.5'
+        }}>
+          По вопросам сотрудничества, а также приобретения данного веб-сайта свяжитесь с нами через телеграм-бота
+        </p>
         <img src="/logo.png" alt="CoinConvert" className="logo" style={{ height: 'auto', marginBottom: '8px' }} />
         <p className="subtitle">
           Обмен USDT на рубли
