@@ -2,6 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
+// Use relative URLs in production (empty string), localhost in development
+const API_BASE_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8000');
+
 const TransactionDetails = () => {
   const { hash } = useParams();
   const navigate = useNavigate();
@@ -11,7 +14,7 @@ const TransactionDetails = () => {
 
   const fetchTransaction = useCallback(async () => {
     try {
-      const response = await axios.get(`http://localhost:8000/api/transactions/${hash}`);
+      const response = await axios.get(`${API_BASE_URL}/api/transactions/${hash}`);
       setTransaction(response.data);
       setLoading(false);
     } catch (err) {

@@ -4,6 +4,9 @@ import axios from 'axios';
 import SellForm from './SellForm';
 import BuyForm from './BuyForm';
 
+// Use relative URLs in production (empty string), localhost in development
+const API_BASE_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8000');
+
 const Dashboard = ({ token, onLogout, onShowLogin }) => {
   const [transactions, setTransactions] = useState([]);
   const [view, setView] = useState('sell');
@@ -12,7 +15,7 @@ const Dashboard = ({ token, onLogout, onShowLogin }) => {
 
   const fetchTransactions = useCallback(async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/transactions', {
+      const response = await axios.get(`${API_BASE_URL}/api/transactions`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTransactions(response.data);

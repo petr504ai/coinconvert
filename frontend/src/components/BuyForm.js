@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
+// Use relative URLs in production (empty string), localhost in development
+const API_BASE_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8000');
+
 const BuyForm = ({ token, onSubmit }) => {
   const navigate = useNavigate();
   const [amount, setAmount] = useState('');
@@ -16,7 +19,7 @@ const BuyForm = ({ token, onSubmit }) => {
     const fetchPricing = async () => {
       setLoadingPricing(true);
       try {
-        const response = await axios.get('http://localhost:8000/pricing');
+        const response = await axios.get(`${API_BASE_URL}/api/pricing`);
         setPricing(response.data);
       } catch (error) {
         console.error('Error fetching pricing:', error);
@@ -72,7 +75,7 @@ const BuyForm = ({ token, onSubmit }) => {
       const config = token ? {
         headers: { Authorization: `Bearer ${token}` }
       } : {};
-      const response = await axios.post('http://localhost:8000/api/transactions', data, config);
+      const response = await axios.post(`${API_BASE_URL}/api/transactions`, data, config);
       
       // Redirect to transaction details page
       navigate(`/transaction/${response.data.hash}`);

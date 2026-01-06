@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
+// Use relative URLs in production (empty string), localhost in development
+const API_BASE_URL = process.env.REACT_APP_API_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:8000');
+
 const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,7 +18,7 @@ const Login = ({ onLogin }) => {
 
     try {
       const response = await axios.post(
-        `http://localhost:8000${endpoint}`,
+        `${API_BASE_URL}${endpoint}`,
         data,
         {
           headers: {

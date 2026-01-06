@@ -28,7 +28,11 @@ logger.info("FastAPI app created")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React dev server
+    allow_origins=[
+        "http://localhost:3000",  # React dev server
+        "https://coinconvert.ru",  # Production domain
+        "http://coinconvert.ru",   # Production domain (HTTP)
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,7 +42,7 @@ app.add_middleware(
 def read_root():
     return {"message": "Welcome to CoinConvert"}
 
-@app.get("/pricing")
+@app.get("/api/pricing")
 def get_pricing():
     """Get current exchange rates and pricing"""
     if not has_pricing:
@@ -51,7 +55,3 @@ def get_pricing():
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(transactions.router, prefix="/api", tags=["transactions"])
-
-@app.get("/")
-def read_root():
-    return {"message": "Welcome to CoinConvert"}
