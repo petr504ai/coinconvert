@@ -43,7 +43,7 @@ def read_root():
     return {"message": "Welcome to CoinConvert"}
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
-app.include_router(transactions.router, prefix="/api", tags=["transactions"])
+app.include_router(transactions.router, tags=["transactions"])  # No prefix - proxy strips /api
 
 @app.get("/pricing")
 def get_pricing():
