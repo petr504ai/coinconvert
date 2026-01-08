@@ -175,6 +175,98 @@ body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
+/* Cards (used by blog + transactions) */
+.transaction-item {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 4px solid rgba(102, 126, 234, 0.9);
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+
+.transaction-item + .transaction-item {
+  margin-top: 12px;
+}
+
+.transaction-item strong {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.transaction-item code {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 2px 6px;
+  border-radius: 8px;
+  color: rgba(102, 126, 234, 0.95);
+}
+
+.transaction-item a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.transaction-item a:hover {
+  text-decoration: underline;
+}
+
+/* Blog readability */
+.blog-intro {
+  margin-top: 0;
+  margin-bottom: 18px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.blog-list {
+  display: grid;
+  gap: 12px;
+}
+
+.blog-card-desc {
+  display: inline-block;
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.82);
+  line-height: 1.5;
+}
+
+.blog-card-date {
+  display: inline-block;
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.blog-meta {
+  display: inline-block;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 10px;
+}
+
+.blog-content {
+  margin-top: 12px;
+}
+
+.blog-content p {
+  margin: 0 0 14px;
+  line-height: 1.75;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.blog-content p:last-child {
+  margin-bottom: 0;
+}
+
+.blog-nav {
+  margin-top: 18px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.blog-nav a {
+  color: rgba(255, 255, 255, 0.85);
+}
+
 .form-container h2 {
   font-size: 1.5rem;
   font-weight: 700;

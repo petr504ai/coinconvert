@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /api/
+Disallow: /transaction/
+
+Sitemap: https://coinconvert.ru/sitemap.xml
+Host: coinconvert.ru

@@ -482,6 +482,9 @@ npm start
 
 This project is for educational purposes. Ensure compliance with local cryptocurrency regulations before deployment.
 
+## Demo
+Live demo is at :  https://www.coinconvert.ru
+
 ## Support
 
 For issues and questions:

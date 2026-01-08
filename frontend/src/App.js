@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import TransactionDetails from './components/TransactionDetails';
+import BlogList from './components/BlogList';
+import BlogPost from './components/BlogPost';
 import './App.css';
 
 // Matomo page tracking component
@@ -40,6 +42,8 @@ function App() {
       <MatomoTracker />
       <div className="App">
         <Routes>
+          <Route path="/blog" element={<BlogList />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
           <Route path="/transaction/:hash" element={<TransactionDetails />} />
           <Route path="/" element={
             showLogin ? (
