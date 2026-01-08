@@ -124,6 +124,14 @@ function main() {
     priority: 1.0
   });
 
+  // FAQ
+  urls.push({
+    loc: buildUrl(baseUrl, '/faq'),
+    lastmod: latestDate,
+    changefreq: 'monthly',
+    priority: 0.7
+  });
+
   // Blog index
   urls.push({
     loc: buildUrl(baseUrl, '/blog'),

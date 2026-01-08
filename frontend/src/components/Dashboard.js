@@ -79,6 +79,34 @@ const Dashboard = ({ token, onLogout, onShowLogin }) => {
           >
             📰 Статьи
           </Link>
+          <Link
+            to="/faq"
+            style={{
+              marginLeft: '12px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 16px',
+              background: 'rgba(255, 255, 255, 0.08)',
+              border: '1px solid rgba(255, 255, 255, 0.18)',
+              borderRadius: '8px',
+              color: 'rgba(255, 255, 255, 0.9)',
+              textDecoration: 'none',
+              fontSize: '0.9rem',
+              fontWeight: '500',
+              transition: 'all 0.2s'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.14)';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
+          >
+            ❓ FAQ
+          </Link>
           <a 
             href="https://t.me/coinconvert_ru_bot" 
             target="_blank" 

@@ -5,6 +5,7 @@ import Dashboard from './components/Dashboard';
 import TransactionDetails from './components/TransactionDetails';
 import BlogList from './components/BlogList';
 import BlogPost from './components/BlogPost';
+import Faq from './components/Faq';
 import './App.css';
 
 // Matomo page tracking component
@@ -44,6 +45,7 @@ function App() {
         <Routes>
           <Route path="/blog" element={<BlogList />} />
           <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/faq" element={<Faq />} />
           <Route path="/transaction/:hash" element={<TransactionDetails />} />
           <Route path="/" element={
             showLogin ? (
