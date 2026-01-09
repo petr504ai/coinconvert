@@ -11,6 +11,7 @@ const Dashboard = ({ token, onLogout, onShowLogin }) => {
   const [transactions, setTransactions] = useState([]);
   const [view, setView] = useState('sell');
   const [trackingHash, setTrackingHash] = useState('');
+  const [pricing, setPricing] = useState(null);
   const navigate = useNavigate();
 
   const fetchTransactions = useCallback(async () => {
@@ -30,6 +31,35 @@ const Dashboard = ({ token, onLogout, onShowLogin }) => {
     }
   }, [token, fetchTransactions]);
 
+  useEffect(() => {
+    const fetchPricing = async () => {
+      try {
+        let response;
+        try {
+          response = await axios.get(`${API_BASE_URL}/api/pricing`);
+        } catch (e) {
+          if (e.response?.status === 404) {
+            response = await axios.get(`${API_BASE_URL}/pricing`);
+          } else {
+            throw e;
+          }
+        }
+        setPricing(response.data);
+      } catch (error) {
+        console.error('Error fetching pricing for header:', error);
+      }
+    };
+
+    fetchPricing();
+    const interval = setInterval(fetchPricing, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatRub = (value) => {
+    if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
+    return Number(value).toFixed(2);
+  };
+
   const handleTransaction = () => {
     if (token) {
       fetchTransactions();
@@ -40,14 +70,39 @@ const Dashboard = ({ token, onLogout, onShowLogin }) => {
   return (
     <div className="app-container">
       <div className="app-header">
-        <p style={{ 
-          fontSize: '0.9rem', 
-          color: 'rgba(255, 255, 255, 0.7)', 
+        <div style={{
+          fontSize: '0.9rem',
+          color: 'rgba(255, 255, 255, 0.7)',
           marginBottom: '16px',
           lineHeight: '1.5'
         }}>
-          По вопросам сотрудничества, а также приобретения данного веб-сайта свяжитесь с нами через телеграм-бота
-        </p>
+          <div style={{
+            display: 'inline-flex',
+            flexWrap: 'wrap',
+            gap: '10px',
+            alignItems: 'center'
+          }}>
+            <span style={{
+              padding: '6px 10px',
+              borderRadius: '8px',
+              background: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              color: 'rgba(255, 255, 255, 0.75)'
+            }}>
+              CoinGecko: <strong style={{ color: 'rgba(255, 255, 255, 0.9)' }}>{formatRub(pricing?.coingecko_usdt_rub)} ₽</strong>
+            </span>
+
+            <span style={{
+              padding: '6px 10px',
+              borderRadius: '8px',
+              background: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              color: 'rgba(255, 255, 255, 0.75)'
+            }}>
+              Bybit P2P: купить <strong style={{ color: 'rgba(255, 255, 255, 0.9)' }}>{formatRub(pricing?.bybit_p2p_buy_usdt_rub)} ₽</strong> · продать <strong style={{ color: 'rgba(255, 255, 255, 0.9)' }}>{formatRub(pricing?.bybit_p2p_sell_usdt_rub)} ₽</strong>
+            </span>
+          </div>
+        </div>
         <img src="/logo.png" alt="CoinConvert" className="logo" style={{ height: 'auto', marginBottom: '8px' }} />
         <p className="subtitle">
           Обмен USDT на рубли

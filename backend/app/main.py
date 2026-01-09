@@ -57,3 +57,9 @@ def get_pricing():
     except Exception as e:
         print(f"Error in pricing endpoint: {e}")
         return {"error": str(e)}
+
+
+@app.get("/api/pricing")
+def get_pricing_api_alias():
+    """Alias for /pricing (frontend prefers /api/pricing)."""
+    return get_pricing()
